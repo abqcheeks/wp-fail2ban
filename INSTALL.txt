@@ -1,0 +1,68 @@
+wp-fail2ban WordPress "must use" plugin.
+Mark Costlow
+cheeks@swcp.com
+8/15/2013
+
+This plugin is used to track WordPress login failures.  It can
+be used to aggregate login failure reports accross many sites
+to catch the "slow burn" WordPress attack bot armies and block them
+with fail2ban.
+
+This "must-use plugin" does not show up in the WordPress control panel
+like other plugins.
+
+
+Installation:
+
+1. Create a mu-plugins directory in your wp-content directory
+2. Copy wp-fail2ban.php to the mu-plugins directory.
+
+Now you should start seeing "wordpress...Authentication" messages
+logged in your system's syslog file, usuually /var/log/syslog or
+something similar.  You may want to use your syslog config file to
+direct these messages to a custom logfile.
+
+Some sample log messages:
+
+Nov 12 22:23:40 www7 wordpress(somesite.org)[28288]: Authentication failure for admin from 64.34.173.227
+Nov 12 22:29:03 www7 wordpress(othersite.com)[30207]: Authentication failure for admin from 37.115.239.1
+Nov 12 22:30:29 www7 wordpress(othersite.com)[30770]: Authentication failure for admin from 46.105.14.54
+Nov 12 22:31:43 www7 wordpress(onemore.org)[31253]: Authentication succeeded for ValidUser from 191.91.143.220
+
+
+The plugin logs both successful and unsuccessful logins.  Blocking the
+brute force password attempts is the obvious use for this.  You might also
+be able to detect patterns of misbehavior from the successful logins as
+well.  (For example, seeing hundreds of successful logins per day might
+to a site might indicate that they are being swamped with comment spam
+from bots).
+
+
+Fail2Ban configuration
+----------------------
+
+Here is a sample entry for your jail.conf:
+
+----
+[wordpress-brute] 
+ 
+enabled  = true 
+filter   = wordpress-brute 
+action   = iptables-allports[name=wordpress-brute] 
+logpath  = /var/log/syslog 
+maxretry = 5 
+bantime  = 3600  ; 1 hour 
+findtime = 36000  ; 10 hours 
+----
+
+
+Here is a sample filter.d/wordpress-brute.conf
+
+----
+[Definition]
+failregex = wordpress.*Authentication failure for .* <HOST>$ 
+
+ignoreregex = 
+----
+
+

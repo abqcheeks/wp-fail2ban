@@ -10,6 +10,8 @@
 // cheeks@swcp.com
 // 8/15/2013
 //
+// Version: 1.0
+//
 
 class wp_fail2ban_special{
 	const SYSLOG_FACILITY = LOG_LOCAL1;
